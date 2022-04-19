@@ -62,6 +62,7 @@ def isData(): #keypress-function to know if there is input available
   return select.select([sys.stdin], [], [], 0) == ([sys.stdin], [], []) #keypress
 
 def GPIOsetup():
+    GPIO.setwarnings(False) #DEBUG 
     GPIO.setmode(GPIO.BOARD) #use the board pin numbering
     GPIO.setup(RHC_PIN, GPIO.OUT) #Refrigerant Heater Control
     GPIO.setup(AHC_PIN, GPIO.OUT) #Air Heater Control
@@ -81,7 +82,7 @@ def WriteReg(bus, address, command, data):
 def WriteRegPair(bus, address, command, data0, data1):
     data = [data0, data1]
     bus.write_i2c_block_data(address, command, data)
-    return writeData
+    return data
 
 #**MAIN**
 
