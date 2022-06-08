@@ -56,10 +56,10 @@ valConReg = [REG_CON0,REG_CON1]
 InputPins = {"Fan Current Fault 1": bool,
             "Fan Current Fault 2": bool,
             "Fan Voltage Monitor": bool,
-            "Air Heater Voltage Fault": bool,
+            "Air Heater Voltage Monitor": bool,
             "Air Heater Current Fault 1": bool,
             "Air Heater Current Fault 2": bool,
-            "Refrigerant Heater Voltage Fault": bool,
+            "Refrigerant Heater Voltage Monitor": bool,
             "Refrigerant Heater Current Fault 1": bool,
             "Refrigerant Heater Current Fault 2": bool,
             "nFAULT": bool}
@@ -118,45 +118,56 @@ def readInputs():
             
         except:
             valInpReg = [0xFF,0xFF]
-            noError = False
             print("Exception: read input registers failed in PCA9535 module\n")
+            noError = False
             
         #Print status (or refresh status display?
         InputPins["Fan Current Fault 1"] = "HIGH" if (valInpReg[0] & 0x02) else "LOW"
         InputPins["Fan Current Fault 2"] = "HIGH" if (valInpReg[0] & 0x01) else "LOW"
         InputPins["Fan Voltage Monitor"] = "HIGH" if (valInpReg[0] & 0x04) else "LOW"
 
-        InputPins["Air Heater Voltage Fault"] = "HIGH" if (valInpReg[1] & 0x01) else "LOW"
+        InputPins["Air Heater Voltage Monitor"] = "HIGH" if (valInpReg[1] & 0x01) else "LOW"
         InputPins["Air Heater Current Fault 1"] = "HIGH" if (valInpReg[1] & 0x02) else "LOW"
         InputPins["Air Heater Current Fault 2"] = "HIGH" if (valInpReg[1] & 0x04) else "LOW"
-        InputPins["Refrigerant Heater Voltage Fault"] = "HIGH" if (valInpReg[1] & 0x08) else "LOW"
+        InputPins["Refrigerant Heater Voltage Monitor"] = "HIGH" if (valInpReg[1] & 0x08) else "LOW"
         InputPins["Refrigerant Heater Current Fault 1"] = "HIGH" if (valInpReg[1] & 0x10) else "LOW"
         InputPins["Refrigerant Heater Current Fault 2"] = "HIGH" if (valInpReg[1] & 0x20) else "LOW"
         InputPins["nFAULT"] = "HIGH" if (valInpReg[1] & 0x80) else "LOW"
         
-        for pin in InputPins:
-            print(pin) #DEBUG Does this only print
+        #for pin in InputPins:
+        #    print(pin + " " + InputPins[pin]) #DEBUG Does this only print
+        FanI1_val['text'] = InputPins['Fan Current Fault 1']
+        FanI2_val['text'] = InputPins['Fan Current Fault 2']
+        FanV_val['text'] = InputPins['Fan Voltage Monitor']
+        AHV_val['text'] = InputPins['Air Heater Voltage Monitor']
+        AHI1_val['text'] = InputPins['Air Heater Current Fault 1']
+        AHI2_val['text'] = InputPins['Air Heater Current Fault 2']
+        RHV_val['text'] = InputPins['Refrigerant Heater Voltage Monitor']
+        RHI1_val['text'] = InputPins['Refrigerant Heater Current Fault 1']
+        RHI2_val['text'] = InputPins['Refrigerant Heater Current Fault 2']
+        nFAULT_val['text'] = InputPins['nFAULT']
 
-def writeOutputs(state,pinOption):
+def writeOutputs():
     try:
-        if pinOption == "RVCtrl":
-            if (state == "LOW"): valOutReg[0] = valOutReg[0] & PIN_RVCtrl  #set RVCtrl bit to 0 if state is LOW
-            if (state == "HIGH"): valOutReg[0] = valOutReg[0] | PIN_RVCtrl #set RVCtrl bit to 1 if state is HIGH
-        if pinOption == "nSleep":
-            if (state == "LOW"): valOutReg[0] = valOutReg[0] & PIN_nSleep  #set nSleep bit to 0 if state is LOW
-            if (state == "HIGH"): valOutReg[0] = valOutReg[0] | PIN_nSleep #set nSleep bit to 1 if state is HIGH
-        if pinOption == "ENABLE":
-            if (state == "LOW"): valOutReg[0] = valOutReg[0] & PIN_ENABLE  #set ENABLE bit to 0 if state is LOW
-            if (state == "HIGH"): valOutReg[0] = valOutReg[0] | PIN_ENABLE #set ENABLE bit to 1 if state is HIGH
-        if pinOption == "ADCRST":
-            if (state == "LOW"): valOutReg[0] = valOutReg[0] & PIN_ADCRST  #set ADCRST bit to 0 if state is LOW
-            if (state == "HIGH"): valOutReg[0] = valOutReg[0] | PIN_ADCRST #set ADCRST bit to 1 if state is HIGH
+    #if pinOption == "RVCtrl":
+        if (RVCtrlState.get() == "RVCtrlLOW"): valOutReg[0] = valOutReg[0] & PIN_RVCtrl  #set RVCtrl bit to 0 if state is LOW
+        if (RVCtrlState.get() == "RVCtrlHIGH"): valOutReg[0] = valOutReg[0] | PIN_RVCtrl #set RVCtrl bit to 1 if state is HIGH
+    #if pinOption == "nSleep":
+        if (nSleepState.get() == "nSleepLOW"): valOutReg[0] = valOutReg[0] & PIN_nSleep  #set nSleep bit to 0 if state is LOW
+        if (nSleepState.get() == "nSleepHIGH"): valOutReg[0] = valOutReg[0] | PIN_nSleep #set nSleep bit to 1 if state is HIGH
+    #if pinOption == "ENABLE":
+        if (ENABLEState.get() == "ENABLELOW"): valOutReg[0] = valOutReg[0] & PIN_ENABLE  #set ENABLE bit to 0 if state is LOW
+        if (ENABLEState.get() == "ENABLEHIGH"): valOutReg[0] = valOutReg[0] | PIN_ENABLE #set ENABLE bit to 1 if state is HIGH
+    #if pinOption == "ADCRST":
+        if (ADCRSTState.get() == "ADCRSTLOW"): valOutReg[0] = valOutReg[0] & PIN_ADCRST  #set ADCRST bit to 0 if state is LOW
+        if (ADCRSTState.get() == "ADCRSTHIGH"): valOutReg[0] = valOutReg[0] | PIN_ADCRST #set ADCRST bit to 1 if state is HIGH
         
         #Write to Refrigerator Valve
         WriteReg(i2cbus, ADDRESS, CMD_OUT0, valOutReg[0])
             
     except:
-        print("Exception: PCA9535- Could not write output register.\n" + str(pinOption))
+        print("Exception: PCA9535- Could not write output register.\n")
+        #Read output register afterwards?
         
 
 #**MAIN**
@@ -189,7 +200,7 @@ except:
     
 root = Tk() #Create TKinter object for GUI
 
-root.geometry("500x500") #Configure GUI geometry
+root.geometry("650x500") #Configure GUI geometry
 
 root.title('AHU Test GUI') #Create title of GUI
 
@@ -198,16 +209,91 @@ mainframe.grid(column=0, row=0, sticky=(N,W,E,S))
 root.grid_columnconfigure(0,weight=1)
 root.grid_rowconfigure(0, weight=1)
 
+Read_button = ttk.Button(mainframe, text="Start Input Registers Read", command=threading)
+
+FanI1_lbl = ttk.Label(mainframe, text="Fan Current Fault 1 :")
+FanI2_lbl = ttk.Label(mainframe, text="Fan Current Fault 2 :")
+FanV_lbl = ttk.Label(mainframe, text="Fan Voltage Monitor :")
+AHV_lbl = ttk.Label(mainframe, text="Air Heater Voltage Monitor :")
+AHI1_lbl = ttk.Label(mainframe, text="Air Heater Current Fault 1 :")
+AHI2_lbl = ttk.Label(mainframe, text="Air Heater Current Fault 2 :")
+RHV_lbl = ttk.Label(mainframe, text="Refrigerant Heater Voltage Monitor :")
+RHI1_lbl = ttk.Label(mainframe, text="Refrigerant Heater Current Fault 1 :")
+RHI2_lbl = ttk.Label(mainframe, text="Refrigerant Heater Current Fault 2 :")
+nFAULT_lbl = ttk.Label(mainframe, text="nFault :")
+
+FanI1_val = ttk.Label(mainframe, text="NO DATA")
+FanI2_val = ttk.Label(mainframe, text="NO DATA")
+FanV_val = ttk.Label(mainframe, text="NO DATA")
+AHV_val = ttk.Label(mainframe, text="NO DATA")
+AHI1_val = ttk.Label(mainframe, text="NO DATA")
+AHI2_val = ttk.Label(mainframe, text="NO DATA")
+RHV_val = ttk.Label(mainframe, text="NO DATA")
+RHI1_val = ttk.Label(mainframe, text="NO DATA")
+RHI2_val = ttk.Label(mainframe, text="NO DATA")
+nFAULT_val = ttk.Label(mainframe, text="NO DATA")
+
 RVCtrl_lbl = ttk.Label(mainframe, text="Refrigerator Valve Control (P3)")
-RVCtrlvar = StringVar()
-RVCtrl = ttk.Combobox(mainframe, textvariable=RVCtrlvar)
-RVCtrl.bind("<<CombboxSelected>>", writeOutputs)
-RVCtrl['values'] = ('HIGH', 'LOW')
+RVCtrlState = StringVar()
+RVCtrl_lo = ttk.Radiobutton(mainframe, text="LOW", command=writeOutputs, variable=RVCtrlState, value='RVCtrlLOW')
+RVCtrl_hi = ttk.Radiobutton(mainframe, text="HIGH", command=writeOutputs, variable=RVCtrlState, value='RVCtrlHIGH')
+
+nSleep_lbl = ttk.Label(mainframe, text="nSleep (P4)")
+nSleepState = StringVar()
+nSleep_lo = ttk.Radiobutton(mainframe, text="LOW", command=writeOutputs, variable=nSleepState, value='nSleepLOW')
+nSleep_hi = ttk.Radiobutton(mainframe, text="HIGH", command=writeOutputs, variable=nSleepState, value='nSleepHIGH')
+
+ENABLE_lbl = ttk.Label(mainframe, text="ENABLE (P5)")
+ENABLEState = StringVar()
+ENABLE_lo = ttk.Radiobutton(mainframe, text="LOW", command=writeOutputs, variable=ENABLEState, value='ENABLELOW')
+ENABLE_hi = ttk.Radiobutton(mainframe, text="HIGH", command=writeOutputs, variable=ENABLEState, value='ENABLEHIGH')
+
+ADCRST_lbl = ttk.Label(mainframe, text="ADCRST (P16)")
+ADCRSTState = StringVar()
+ADCRST_lo = ttk.Radiobutton(mainframe, text="LOW", command=writeOutputs, variable=ADCRSTState, value='ADCRSTLOW')
+ADCRST_hi = ttk.Radiobutton(mainframe, text="HIGH", command=writeOutputs, variable=ADCRSTState, value='ADCRSTHIGH')
 
 
 #Grid Widgets
+Read_button.grid(column=1, row=3, pady=20)
+
+FanI1_lbl.grid(column=0, row=4, columnspan=2, pady=5)
+FanI2_lbl.grid(column=0, row=5, columnspan=2, pady=5)
+FanV_lbl.grid(column=0, row=6, columnspan=2, pady=5)
+AHV_lbl.grid(column=0, row=7, columnspan=2, pady=5)
+AHI1_lbl.grid(column=0, row=8, columnspan=2, pady=5)
+AHI2_lbl.grid(column=0, row=9, columnspan=2, pady=5)
+RHV_lbl.grid(column=0, row=10, columnspan=2, pady=5)
+RHI1_lbl.grid(column=0, row=11, columnspan=2, pady=5)
+RHI2_lbl.grid(column=0, row=12, columnspan=2, pady=5)
+nFAULT_lbl.grid(column=0, row=13, columnspan=2, pady=5)
+
+FanI1_val.grid(column=2, row=4, pady=5)
+FanI2_val.grid(column=2, row=5, pady=5)
+FanV_val.grid(column=2, row=6, pady=5)
+AHV_val.grid(column=2, row=7, pady=5)
+AHI1_val.grid(column=2, row=8, pady=5)
+AHI2_val.grid(column=2, row=9, pady=5)
+RHV_val.grid(column=2, row=10, pady=5)
+RHI1_val.grid(column=2, row=11, pady=5)
+RHI2_val.grid(column=2, row=12, pady=5)
+nFAULT_val.grid(column=2, row=13, pady=5)
+
 RVCtrl_lbl.grid(column=0,row=0,padx=10,pady=5)
-RVCtrl.grid(column=0,row=1,pady=20)
+RVCtrl_lo.grid(column=0,row=2,pady=10)
+RVCtrl_hi.grid(column=0,row=1,pady=10)
+
+nSleep_lbl.grid(column=1,row=0,padx=10,pady=5)
+nSleep_lo.grid(column=1,row=2,pady=10)
+nSleep_hi.grid(column=1,row=1,pady=10)
+
+ENABLE_lbl.grid(column=2,row=0,padx=10,pady=5)
+ENABLE_lo.grid(column=2,row=2,pady=10)
+ENABLE_hi.grid(column=2,row=1,pady=10)
+
+ADCRST_lbl.grid(column=3,row=0,padx=10,pady=5)
+ADCRST_lo.grid(column=3,row=2,pady=10)
+ADCRST_hi.grid(column=3,row=1,pady=10)
 
 #Start main loop of GUI
 root.mainloop()
