@@ -8,7 +8,7 @@ from smbus import SMBus
 from tkinter import *
 from tkinter import ttk
 from threading import *
-#import spidev
+import spidev
 #import re
 import sys
 import select
@@ -42,6 +42,9 @@ PIN_ADCRST = 0x40 #P16
 #I2C address format is b00100[A2][A1][A0] (Address pins are tied to GND on circuit)
 ADDRESS= 0x20
 
+#SPI Addresses
+spiaddr_ADS131E08 = 1
+
 #CONSTANTS
 channel = 1
 RHC_PIN = 13 #Refrigerant Heater Control
@@ -71,7 +74,51 @@ OutputPins = {"RVCtrl": PIN_RVCtrl,
               "ENABLE": PIN_ENABLE,
               "ADCRST": PIN_ADCRST}
 
+CMD_ADS131E08 = {"WAKEUP": 0x02,
+                 "STANDBY": 0x04,
+                 "RESET": 0x06,
+                 "START": 0x08,
+                 "STOP": 0x0A,
+                 "OFFSETCAL": 0x1A,
+                 "RDATAC": 0x10,
+                 "SDATAC": 0x11,
+                 "RDATA": 0x12,
+                 "RREG": hex,
+                 "WREG": hex}
 
+REGADDR_ADS131E08 = {'ID':0x00,
+                     'CONFIG1':0x01,
+                     'CONFIG2':0x02,
+                     'CONFIG3':0x03,
+                     'FAULT':0x04,
+                     'CH1SET':0x05,
+                     'CH2SET':0x06,
+                     'CH3SET':0x07,
+                     'CH4SET':0x08,
+                     'CH5SET':0x09,
+                     'CH6SET':0x0A,
+                     'CH7SET':0x0B,
+                     'CH8SET':0x0C,
+                     'FAULT_STATP':0x12,
+                     'FAULT_STATN':0x13,
+                     'GPIO':0x14}
+
+REGVAL_ADS131E08 = {'ID':bytes,
+                     'CONFIG1':bytes,
+                     'CONFIG2':bytes,
+                     'CONFIG3':bytes,
+                     'FAULT':bytes,
+                     'CH1SET':bytes,
+                     'CH2SET':bytes,
+                     'CH3SET':bytes,
+                     'CH4SET':bytes,
+                     'CH5SET':bytes,
+                     'CH6SET':bytes,
+                     'CH7SET':bytes,
+                     'CH8SET':bytes,
+                     'FAULT_STATP':bytes,
+                     'FAULT_STATN':bytes,
+                     'GPIO':bytes}
 
 
         
@@ -185,26 +232,23 @@ def setDir():
 def runSTEP():
     #stepToggle = True
     stepDur = STEPduration.get()
-    startTime = time.time()
+    startTime = time.time_ns()
     STEPState = False
-    STEPNum = 0
-    while STEPNum < int(STEPQty.get()) and not StepStop.get() == 'STOP':
+    while not StepStop.get() == 'STOP':
         nowTime= time.time_ns() - startTime
-        #print(str(nowTime))
+        print(str(nowTime))
         if nowTime > int(stepDur):
             startTime = time.time_ns()
             if not STEPState:
                 GPIO.output(STEP_PIN, GPIO.HIGH)
                 STEPState = True
                 STEPState_val['text'] = "HIGH"
-                #print("HIGH")
+                print("HIGH")
             if STEPState:
                 GPIO.output(STEP_PIN, GPIO.LOW)
                 STEPState = False
                 STEPState_val['text'] = "LOW"
-                #print("LOW")
-        STEPNum = STEPNum + 1
-        print(str(STEPNum))
+                print("LOW")
 
 def STEPThread():
     #Call runSTEP function
@@ -213,15 +257,18 @@ def STEPThread():
 
 #**MAIN**
 
-
-
-
-
 #SETUP GPIO
 GPIOsetup()
 
 #SETUP I2C Bus
 i2cbus = SMBus(channel)
+
+#Setup SPI Bus
+spi = spidev.SpiDev()
+spi.open(0,spiaddr_ADS131E08)
+spi.max_speed_hz = 500000
+spi.mode = 0
+
 
 #initial write to config and polarity inversion register
 try:
@@ -308,11 +355,6 @@ STEPrate = ttk.Entry(mainframe, textvariable=STEPduration)
 STEPduration.set("1")
 STEPState_val = ttk.Label(mainframe, text="NO DATA")
 
-STEPQty = StringVar()#Number of steps
-STEPQty_entry = ttk.Entry(mainframe, textvariable=STEPQty)
-STEPQty_lbl = ttk.Label(mainframe, text="Number of Steps")
-
-
 
 #Grid Widgets
 Read_button.grid(column=0, columnspan=2, row=3, pady=20)
@@ -372,9 +414,6 @@ STEPdur_lbl.grid(column=2, row=5, pady=5)
 STEPrate.grid(column=3, row=5, pady=5)
 STEPState_val.grid(column=3, row=6, pady=5)
 
-STEPQty_entry.grid(column=3, row=6, pady=5)
-STEPQty_lbl.grid(column=2, row=6, pady=5)
-
 #Start main loop of GUI
 root.mainloop()
 
@@ -385,4 +424,5 @@ root.mainloop()
 
 
     
+
 
