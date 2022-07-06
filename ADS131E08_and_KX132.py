@@ -200,6 +200,8 @@ def ACCThreadWREG():
     t7=Thread(target=writeregs_KX132)
     t7.start()
     
+ 
+    
 #**MAIN**
 
 

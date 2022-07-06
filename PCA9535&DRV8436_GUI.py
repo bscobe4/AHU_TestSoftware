@@ -185,23 +185,26 @@ def setDir():
 def runSTEP():
     #stepToggle = True
     stepDur = STEPduration.get()
-    startTime = time.time_ns()
+    startTime = time.time()
     STEPState = False
-    while not StepStop.get() == 'STOP':
+    STEPNum = 0
+    while STEPNum < int(STEPQty.get()) and not StepStop.get() == 'STOP':
         nowTime= time.time_ns() - startTime
-        print(str(nowTime))
+        #print(str(nowTime))
         if nowTime > int(stepDur):
             startTime = time.time_ns()
             if not STEPState:
                 GPIO.output(STEP_PIN, GPIO.HIGH)
                 STEPState = True
                 STEPState_val['text'] = "HIGH"
-                print("HIGH")
+                #print("HIGH")
             if STEPState:
                 GPIO.output(STEP_PIN, GPIO.LOW)
                 STEPState = False
                 STEPState_val['text'] = "LOW"
-                print("LOW")
+                #print("LOW")
+        STEPNum = STEPNum + 1
+        print(str(STEPNum))
 
 def STEPThread():
     #Call runSTEP function
@@ -305,6 +308,11 @@ STEPrate = ttk.Entry(mainframe, textvariable=STEPduration)
 STEPduration.set("1")
 STEPState_val = ttk.Label(mainframe, text="NO DATA")
 
+STEPQty = StringVar()#Number of steps
+STEPQty_entry = ttk.Entry(mainframe, textvariable=STEPQty)
+STEPQty_lbl = ttk.Label(mainframe, text="Number of Steps")
+
+
 
 #Grid Widgets
 Read_button.grid(column=0, columnspan=2, row=3, pady=20)
@@ -363,6 +371,9 @@ STEPstop_button.grid(column=3, row=4, pady=5)
 STEPdur_lbl.grid(column=2, row=5, pady=5)
 STEPrate.grid(column=3, row=5, pady=5)
 STEPState_val.grid(column=3, row=6, pady=5)
+
+STEPQty_entry.grid(column=3, row=6, pady=5)
+STEPQty_lbl.grid(column=2, row=6, pady=5)
 
 #Start main loop of GUI
 root.mainloop()
