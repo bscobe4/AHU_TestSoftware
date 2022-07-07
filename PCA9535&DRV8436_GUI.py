@@ -155,16 +155,16 @@ def readInputs():
 def writeOutputs():
     try:
     #if pinOption == "RVCtrl":
-        if (RVCtrlState.get() == "RVCtrlLOW"): valOutReg[0] = valOutReg[0] & PIN_RVCtrl  #set RVCtrl bit to 0 if state is LOW
+        if (RVCtrlState.get() == "RVCtrlLOW"): valOutReg[0] = valOutReg[0] ^ PIN_RVCtrl  #set RVCtrl bit to 0 if state is LOW
         if (RVCtrlState.get() == "RVCtrlHIGH"): valOutReg[0] = valOutReg[0] | PIN_RVCtrl #set RVCtrl bit to 1 if state is HIGH
     #if pinOption == "nSleep":
-        if (nSleepState.get() == "nSleepLOW"): valOutReg[0] = valOutReg[0] & PIN_nSleep  #set nSleep bit to 0 if state is LOW
+        if (nSleepState.get() == "nSleepLOW"): valOutReg[0] = valOutReg[0] ^ PIN_nSleep  #set nSleep bit to 0 if state is LOW
         if (nSleepState.get() == "nSleepHIGH"): valOutReg[0] = valOutReg[0] | PIN_nSleep #set nSleep bit to 1 if state is HIGH
     #if pinOption == "ENABLE":
-        if (ENABLEState.get() == "ENABLELOW"): valOutReg[0] = valOutReg[0] & PIN_ENABLE  #set ENABLE bit to 0 if state is LOW
+        if (ENABLEState.get() == "ENABLELOW"): valOutReg[0] = valOutReg[0] ^ PIN_ENABLE  #set ENABLE bit to 0 if state is LOW
         if (ENABLEState.get() == "ENABLEHIGH"): valOutReg[0] = valOutReg[0] | PIN_ENABLE #set ENABLE bit to 1 if state is HIGH
     #if pinOption == "ADCRST":
-        if (ADCRSTState.get() == "ADCRSTLOW"): valOutReg[0] = valOutReg[0] & PIN_ADCRST  #set ADCRST bit to 0 if state is LOW
+        if (ADCRSTState.get() == "ADCRSTLOW"): valOutReg[0] = valOutReg[0] ^ PIN_ADCRST  #set ADCRST bit to 0 if state is LOW
         if (ADCRSTState.get() == "ADCRSTHIGH"): valOutReg[0] = valOutReg[0] | PIN_ADCRST #set ADCRST bit to 1 if state is HIGH
         
         #Write to Refrigerator Valve
@@ -191,6 +191,7 @@ def runSTEP():
     while STEPNum < int(STEPQty.get()) and not StepStop.get() == 'STOP':
         nowTime= time.time_ns() - startTime
         #print(str(nowTime))
+        
         if nowTime > int(stepDur):
             startTime = time.time_ns()
             if not STEPState:
@@ -234,9 +235,18 @@ except:
     print("Exception: PCA9535- Could not write configuration register.\n")
 try:
     valOutReg = ReadRegPair(i2cbus, ADDRESS, CMD_OUT0)
+    print("Initial Output Register Value: " + str(valOutReg) + "\n")
 except:
     valOutReg = [0x00,0x00]
     print("Exception: PCA0535- Could not read initial value of output register. Set to 0x00,0x00.\n")
+try:
+    print("Initial Input Register Value: " + str(ReadRegPair(i2cbus, ADDRESS, CMD_INP0)) + "\n")
+    print("Initial Polarity Register Value: " + str(ReadRegPair(i2cbus, ADDRESS, CMD_POL0)) + "\n")
+    print("Initial Config Register Value: " + str(ReadRegPair(i2cbus, ADDRESS, CMD_CON0)) + "\n")
+except:
+    print("DEBUG Could not read initial values of Input, Polarity and Config Registers\n")
+    
+
 #Construct and initialize GUI
     
 root = Tk() #Create TKinter object for GUI
