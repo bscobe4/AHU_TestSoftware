@@ -164,8 +164,8 @@ def writeOutputs():
         if (ENABLEState.get() == "ENABLELOW"): valOutReg[0] = valOutReg[0] ^ PIN_ENABLE  #set ENABLE bit to 0 if state is LOW
         if (ENABLEState.get() == "ENABLEHIGH"): valOutReg[0] = valOutReg[0] | PIN_ENABLE #set ENABLE bit to 1 if state is HIGH
     #if pinOption == "ADCRST":
-        if (ADCRSTState.get() == "ADCRSTLOW"): valOutReg[0] = valOutReg[0] ^ PIN_ADCRST  #set ADCRST bit to 0 if state is LOW
-        if (ADCRSTState.get() == "ADCRSTHIGH"): valOutReg[0] = valOutReg[0] | PIN_ADCRST #set ADCRST bit to 1 if state is HIGH
+        if (ADCRSTState.get() == "ADCRSTLOW"): valOutReg[1] = valOutReg[1] ^ PIN_ADCRST  #set ADCRST bit to 0 if state is LOW
+        if (ADCRSTState.get() == "ADCRSTHIGH"): valOutReg[1] = valOutReg[1] | PIN_ADCRST #set ADCRST bit to 1 if state is HIGH
         
         #Write to Refrigerator Valve
         WriteReg(i2cbus, ADDRESS, CMD_OUT0, valOutReg[0])
@@ -189,11 +189,11 @@ def runSTEP():
     STEPState = False
     STEPNum = 0
     while STEPNum < int(STEPQty.get()) and not StepStop.get() == 'STOP':
-        nowTime= time.time_ns() - startTime
+        nowTime= time.time() - startTime
         #print(str(nowTime))
         
         if nowTime > int(stepDur):
-            startTime = time.time_ns()
+            startTime = time.time()
             if not STEPState:
                 GPIO.output(STEP_PIN, GPIO.HIGH)
                 STEPState = True
@@ -312,7 +312,7 @@ DIR_hi = ttk.Radiobutton(mainframe, text="HIGH", command=setDir, variable=DIRSta
 STEPstart_button = ttk.Button(mainframe, text="Start STEP input", command=STEPThread)
 StepStop = StringVar()
 STEPstop_button = ttk.Checkbutton(mainframe, text="Stop STEP input", variable=StepStop, onvalue='STOP', offvalue='notSTOP')
-STEPdur_lbl = ttk.Label(mainframe, text="Step Duration (ns)")
+STEPdur_lbl = ttk.Label(mainframe, text="Step Duration (ms)")
 STEPduration = StringVar()
 STEPrate = ttk.Entry(mainframe, textvariable=STEPduration)
 STEPduration.set("1")
