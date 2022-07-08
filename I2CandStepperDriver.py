@@ -168,7 +168,7 @@ def writeOutputs():
         if (ADCRSTState.get() == "ADCRSTHIGH"): valOutReg[1] = valOutReg[1] | PIN_ADCRST #set ADCRST bit to 1 if state is HIGH
         
         #Write to Refrigerator Valve
-        WriteReg(i2cbus, ADDRESS, CMD_OUT0, valOutReg[0])
+        WriteRegPair(i2cbus, ADDRESS, CMD_OUT0, valOutReg[0], valOutReg[1])
             
     except:
         print("Exception: PCA9535- Could not write output register.\n")
