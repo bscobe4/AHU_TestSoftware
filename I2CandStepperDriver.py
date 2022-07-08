@@ -184,28 +184,32 @@ def setDir():
         
 def runSTEP():
     #stepToggle = True
+    print("Starting stepper motor\n")
     stepDur = STEPduration.get()
-    startTime = time.time()
+    startTime = time.time() * 1000
     STEPState = False
     STEPNum = 0
     while STEPNum < int(STEPQty.get()) and not StepStop.get() == 'STOP':
-        nowTime= time.time() - startTime
+        nowTime= (time.time()*1000) - startTime
         #print(str(nowTime))
         
         if nowTime > int(stepDur):
-            startTime = time.time()
+            startTime = time.time() * 1000
             if not STEPState:
                 GPIO.output(STEP_PIN, GPIO.HIGH)
-                STEPState = True
                 STEPState_val['text'] = "HIGH"
+                STEPState = True
                 #print("HIGH")
-            if STEPState:
+            else:
                 GPIO.output(STEP_PIN, GPIO.LOW)
-                STEPState = False
                 STEPState_val['text'] = "LOW"
+                STEPState = False
                 #print("LOW")
-        STEPNum = STEPNum + 1
-        print(str(STEPNum))
+            STEPNum = STEPNum + 1
+            print(str(STEPNum))
+            
+        #print(nowTime)
+        print(STEPState)
 
 def STEPThread():
     #Call runSTEP function
@@ -380,7 +384,7 @@ STEPstart_button.grid(column=2, row=4, pady=5)
 STEPstop_button.grid(column=3, row=4, pady=5)
 STEPdur_lbl.grid(column=2, row=5, pady=5)
 STEPrate.grid(column=3, row=5, pady=5)
-STEPState_val.grid(column=3, row=6, pady=5)
+STEPState_val.grid(column=4, row=5, pady=5)
 
 STEPQty_entry.grid(column=3, row=6, pady=5)
 STEPQty_lbl.grid(column=2, row=6, pady=5)
