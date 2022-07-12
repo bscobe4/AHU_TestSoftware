@@ -327,6 +327,19 @@ STEPQty_entry = ttk.Entry(mainframe, textvariable=STEPQty)
 STEPQty_lbl = ttk.Label(mainframe, text="Number of Steps")
 
 
+#Set initial value of output registers to LOW
+
+try:
+    RVCtrlState.set('RVCtrlLOW')
+    nSleepState.set('nSleepLOW')
+    ENABLEState.set('ENABLELOW')
+    ADCRSTState.set('ADCRSTLOW')
+    DIRState.set('DIRLOW')
+    writeOutputs()
+    
+except:
+    print("Exception: PCA9535- Could not initial write output register.\n")
+
 
 #Grid Widgets
 Read_button.grid(column=0, columnspan=2, row=3, pady=20)
