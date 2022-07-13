@@ -209,7 +209,14 @@ def runSTEP():
             print(str(STEPNum))
             
         #print(nowTime)
-        print(STEPState)
+        #print(STEPState)
+            
+def runSTEP_pwm():
+    print("Starting stepper motor (PWM)\n")
+    stepRate = 1000 / STEPduration.get() #User enters step duration in ms, so the rate in Hz is 1000 / (Step Duration) ms
+    startTime = time.time() * 1000
+    STEPState = False
+    STEPNum = 0
 
 def STEPThread():
     #Call runSTEP function
