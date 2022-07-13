@@ -8,7 +8,7 @@ from smbus import SMBus
 from tkinter import *
 from tkinter import ttk
 from threading import *
-import spidev
+#import spidev
 #import re
 import sys
 import select
@@ -42,9 +42,6 @@ PIN_ADCRST = 0x40 #P16
 #I2C address format is b00100[A2][A1][A0] (Address pins are tied to GND on circuit)
 ADDRESS= 0x20
 
-#SPI Addresses
-spiaddr_ADS131E08 = 1
-
 #CONSTANTS
 channel = 1
 RHC_PIN = 13 #Refrigerant Heater Control
@@ -74,51 +71,7 @@ OutputPins = {"RVCtrl": PIN_RVCtrl,
               "ENABLE": PIN_ENABLE,
               "ADCRST": PIN_ADCRST}
 
-CMD_ADS131E08 = {"WAKEUP": 0x02,
-                 "STANDBY": 0x04,
-                 "RESET": 0x06,
-                 "START": 0x08,
-                 "STOP": 0x0A,
-                 "OFFSETCAL": 0x1A,
-                 "RDATAC": 0x10,
-                 "SDATAC": 0x11,
-                 "RDATA": 0x12,
-                 "RREG": hex,
-                 "WREG": hex}
 
-REGADDR_ADS131E08 = {'ID':0x00,
-                     'CONFIG1':0x01,
-                     'CONFIG2':0x02,
-                     'CONFIG3':0x03,
-                     'FAULT':0x04,
-                     'CH1SET':0x05,
-                     'CH2SET':0x06,
-                     'CH3SET':0x07,
-                     'CH4SET':0x08,
-                     'CH5SET':0x09,
-                     'CH6SET':0x0A,
-                     'CH7SET':0x0B,
-                     'CH8SET':0x0C,
-                     'FAULT_STATP':0x12,
-                     'FAULT_STATN':0x13,
-                     'GPIO':0x14}
-
-REGVAL_ADS131E08 = {'ID':bytes,
-                     'CONFIG1':bytes,
-                     'CONFIG2':bytes,
-                     'CONFIG3':bytes,
-                     'FAULT':bytes,
-                     'CH1SET':bytes,
-                     'CH2SET':bytes,
-                     'CH3SET':bytes,
-                     'CH4SET':bytes,
-                     'CH5SET':bytes,
-                     'CH6SET':bytes,
-                     'CH7SET':bytes,
-                     'CH8SET':bytes,
-                     'FAULT_STATP':bytes,
-                     'FAULT_STATN':bytes,
-                     'GPIO':bytes}
 
 
         
@@ -202,20 +155,20 @@ def readInputs():
 def writeOutputs():
     try:
     #if pinOption == "RVCtrl":
-        if (RVCtrlState.get() == "RVCtrlLOW"): valOutReg[0] = valOutReg[0] & PIN_RVCtrl  #set RVCtrl bit to 0 if state is LOW
+        if (RVCtrlState.get() == "RVCtrlLOW"): valOutReg[0] = valOutReg[0] ^ PIN_RVCtrl  #set RVCtrl bit to 0 if state is LOW
         if (RVCtrlState.get() == "RVCtrlHIGH"): valOutReg[0] = valOutReg[0] | PIN_RVCtrl #set RVCtrl bit to 1 if state is HIGH
     #if pinOption == "nSleep":
-        if (nSleepState.get() == "nSleepLOW"): valOutReg[0] = valOutReg[0] & PIN_nSleep  #set nSleep bit to 0 if state is LOW
+        if (nSleepState.get() == "nSleepLOW"): valOutReg[0] = valOutReg[0] ^ PIN_nSleep  #set nSleep bit to 0 if state is LOW
         if (nSleepState.get() == "nSleepHIGH"): valOutReg[0] = valOutReg[0] | PIN_nSleep #set nSleep bit to 1 if state is HIGH
     #if pinOption == "ENABLE":
-        if (ENABLEState.get() == "ENABLELOW"): valOutReg[0] = valOutReg[0] & PIN_ENABLE  #set ENABLE bit to 0 if state is LOW
+        if (ENABLEState.get() == "ENABLELOW"): valOutReg[0] = valOutReg[0] ^ PIN_ENABLE  #set ENABLE bit to 0 if state is LOW
         if (ENABLEState.get() == "ENABLEHIGH"): valOutReg[0] = valOutReg[0] | PIN_ENABLE #set ENABLE bit to 1 if state is HIGH
     #if pinOption == "ADCRST":
-        if (ADCRSTState.get() == "ADCRSTLOW"): valOutReg[0] = valOutReg[0] & PIN_ADCRST  #set ADCRST bit to 0 if state is LOW
-        if (ADCRSTState.get() == "ADCRSTHIGH"): valOutReg[0] = valOutReg[0] | PIN_ADCRST #set ADCRST bit to 1 if state is HIGH
+        if (ADCRSTState.get() == "ADCRSTLOW"): valOutReg[1] = valOutReg[1] ^ PIN_ADCRST  #set ADCRST bit to 0 if state is LOW
+        if (ADCRSTState.get() == "ADCRSTHIGH"): valOutReg[1] = valOutReg[1] | PIN_ADCRST #set ADCRST bit to 1 if state is HIGH
         
         #Write to Refrigerator Valve
-        WriteReg(i2cbus, ADDRESS, CMD_OUT0, valOutReg[0])
+        WriteRegPair(i2cbus, ADDRESS, CMD_OUT0, valOutReg[0], valOutReg[1])
             
     except:
         print("Exception: PCA9535- Could not write output register.\n")
@@ -231,24 +184,39 @@ def setDir():
         
 def runSTEP():
     #stepToggle = True
+    print("Starting stepper motor\n")
     stepDur = STEPduration.get()
-    startTime = time.time_ns()
+    startTime = time.time() * 1000
     STEPState = False
-    while not StepStop.get() == 'STOP':
-        nowTime= time.time_ns() - startTime
-        print(str(nowTime))
+    STEPNum = 0
+    while STEPNum < int(STEPQty.get()) and not StepStop.get() == 'STOP':
+        nowTime= (time.time()*1000) - startTime
+        #print(str(nowTime))
+        
         if nowTime > int(stepDur):
-            startTime = time.time_ns()
+            startTime = time.time() * 1000
             if not STEPState:
                 GPIO.output(STEP_PIN, GPIO.HIGH)
-                STEPState = True
                 STEPState_val['text'] = "HIGH"
-                print("HIGH")
-            if STEPState:
+                STEPState = True
+                #print("HIGH")
+            else:
                 GPIO.output(STEP_PIN, GPIO.LOW)
-                STEPState = False
                 STEPState_val['text'] = "LOW"
-                print("LOW")
+                STEPState = False
+                #print("LOW")
+            STEPNum = STEPNum + 1
+            print(str(STEPNum))
+            
+        #print(nowTime)
+        #print(STEPState)
+            
+def runSTEP_pwm():
+    print("Starting stepper motor (PWM)\n")
+    stepRate = 1000 / STEPduration.get() #User enters step duration in ms, so the rate in Hz is 1000 / (Step Duration) ms
+    startTime = time.time() * 1000
+    STEPState = False
+    STEPNum = 0
 
 def STEPThread():
     #Call runSTEP function
@@ -257,18 +225,15 @@ def STEPThread():
 
 #**MAIN**
 
+
+
+
+
 #SETUP GPIO
 GPIOsetup()
 
 #SETUP I2C Bus
 i2cbus = SMBus(channel)
-
-#Setup SPI Bus
-spi = spidev.SpiDev()
-spi.open(0,spiaddr_ADS131E08)
-spi.max_speed_hz = 500000
-spi.mode = 0
-
 
 #initial write to config and polarity inversion register
 try:
@@ -281,9 +246,18 @@ except:
     print("Exception: PCA9535- Could not write configuration register.\n")
 try:
     valOutReg = ReadRegPair(i2cbus, ADDRESS, CMD_OUT0)
+    print("Initial Output Register Value: " + str(valOutReg) + "\n")
 except:
     valOutReg = [0x00,0x00]
     print("Exception: PCA0535- Could not read initial value of output register. Set to 0x00,0x00.\n")
+try:
+    print("Initial Input Register Value: " + str(ReadRegPair(i2cbus, ADDRESS, CMD_INP0)) + "\n")
+    print("Initial Polarity Register Value: " + str(ReadRegPair(i2cbus, ADDRESS, CMD_POL0)) + "\n")
+    print("Initial Config Register Value: " + str(ReadRegPair(i2cbus, ADDRESS, CMD_CON0)) + "\n")
+except:
+    print("DEBUG Could not read initial values of Input, Polarity and Config Registers\n")
+    
+
 #Construct and initialize GUI
     
 root = Tk() #Create TKinter object for GUI
@@ -349,11 +323,29 @@ DIR_hi = ttk.Radiobutton(mainframe, text="HIGH", command=setDir, variable=DIRSta
 STEPstart_button = ttk.Button(mainframe, text="Start STEP input", command=STEPThread)
 StepStop = StringVar()
 STEPstop_button = ttk.Checkbutton(mainframe, text="Stop STEP input", variable=StepStop, onvalue='STOP', offvalue='notSTOP')
-STEPdur_lbl = ttk.Label(mainframe, text="Step Duration (ns)")
+STEPdur_lbl = ttk.Label(mainframe, text="Step Duration (ms)")
 STEPduration = StringVar()
 STEPrate = ttk.Entry(mainframe, textvariable=STEPduration)
 STEPduration.set("1")
 STEPState_val = ttk.Label(mainframe, text="NO DATA")
+
+STEPQty = StringVar()#Number of steps
+STEPQty_entry = ttk.Entry(mainframe, textvariable=STEPQty)
+STEPQty_lbl = ttk.Label(mainframe, text="Number of Steps")
+
+
+#Set initial value of output registers to LOW
+
+try:
+    RVCtrlState.set('RVCtrlLOW')
+    nSleepState.set('nSleepLOW')
+    ENABLEState.set('ENABLELOW')
+    ADCRSTState.set('ADCRSTLOW')
+    DIRState.set('DIRLOW')
+    writeOutputs()
+    
+except:
+    print("Exception: PCA9535- Could not initial write output register.\n")
 
 
 #Grid Widgets
@@ -412,7 +404,10 @@ STEPstart_button.grid(column=2, row=4, pady=5)
 STEPstop_button.grid(column=3, row=4, pady=5)
 STEPdur_lbl.grid(column=2, row=5, pady=5)
 STEPrate.grid(column=3, row=5, pady=5)
-STEPState_val.grid(column=3, row=6, pady=5)
+STEPState_val.grid(column=4, row=5, pady=5)
+
+STEPQty_entry.grid(column=3, row=6, pady=5)
+STEPQty_lbl.grid(column=2, row=6, pady=5)
 
 #Start main loop of GUI
 root.mainloop()
@@ -424,5 +419,4 @@ root.mainloop()
 
 
     
-
 

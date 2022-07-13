@@ -127,6 +127,49 @@ def sendADCcmd():
     except:
         print("Could not send ADC command" + CMDvar.get())
     #return 0
+        
+def ADCReadAllReg():
+    try:
+        REGvar.set('ID')
+        spi.open(0,spiaddr_ADS131E08)
+        spi.writebytes([CMD_ADC['RREG'] + REGADDR_ADC[REGvar.get()], 0x0F]) #Read ll 16 registers starting with "ID"
+        regs = spi.readbytes(16)
+        #print(regs)
+        #print(hex(CMD_ADC['RREG'] + REGADDR_ADC[REGvar.get()]))
+        #REGval_lbl['text'] = "ADC Register Values: " + str(regs)
+        spi.close()
+        
+        ID_lblv['text'] = str(regs[0])
+        CONFIG1_lblv['text'] = str(regs[1])
+        CONFIG2_lblv['text'] = str(regs[2])
+        CONFIG3_lblv['text'] = str(regs[3])
+        FAULT_lblv['text'] = str(regs[4])
+        CH1SET_lblv['text'] = str(regs[5])
+        CH2SET_lblv['text'] = str(regs[6])
+        CH3SET_lblv['text'] = str(regs[7])
+        CH4SET_lblv['text'] = str(regs[8])
+        CH5SET_lblv['text'] = str(regs[9])
+        CH6SET_lblv['text'] = str(regs[10])
+        CH7SET_lblv['text'] = str(regs[11])
+        CH8SET_lblv['text'] = str(regs[12])
+        FAULT_STATP_lblv['text'] = str(regs[13])
+        FAULT_STATN_lblv['text'] = str(regs[14])
+        GPIO_lblv['text'] = str(regs[15])
+    except:
+        print("Could not read ADC register " + REGvar.get())
+        
+def ADCInit():
+    try:
+        CMDvar.set("RESET")
+        sendADCcmd()
+    except:
+        print("Could not initial reset ADC")
+    try:
+        CMDvar.set("SDATAC")
+        sendADCcmd()
+    except:
+        print("Could not stop ADC continuous read")
+    ADCReadAllReg()
 
 def readregs_ADS131E08(): #Check if byte pairs need to be split in half
     #spi.writebytes([CMD_ADC['RREG'],REGADDR_ADC[REGvar.get()]])
@@ -214,12 +257,14 @@ spi = spidev.SpiDev()
 
 adcgui = Tk() #Create TKinter object for GUI
 
-adcgui.geometry("800x500") #Configure GUI geometry
+adcgui.geometry("590x390") #Configure GUI geometry
 
 adcgui.title('ADS131E08 Test GUI') #Create title of GUI
 
 adcframe = ttk.Frame(adcgui, padding="3 3 12 12")
 adcframe.grid(column=0, row=0, sticky=(N,W,E,S))
+regframe = ttk.Frame(adcgui, padding=" 3 3 12 12")
+regframe.grid(column=0, row=1, sticky=(N,W,E,S))
 adcgui.grid_columnconfigure(0,weight=1)
 adcgui.grid_rowconfigure(0, weight=1)
 
@@ -267,6 +312,48 @@ ACCwreg_button = ttk.Button(adcframe, text="Write ACC Register", command=ACCThre
 
 REGvalAcc_lbl = ttk.Label(adcframe, text="ACC Register Value: no data")
 
+ADCReadAllReg_button = ttk.Button(adcframe, text="Read All ADC Registers", command=ADCReadAllReg())
+
+ID_lbl = ttk.Label(regframe, text="ID:")
+CONFIG1_lbl = ttk.Label(regframe, text="CONFIG1:")
+CONFIG2_lbl = ttk.Label(regframe, text="CONFIG2:")
+CONFIG3_lbl = ttk.Label(regframe, text="CONFIG3:")
+FAULT_lbl = ttk.Label(regframe, text="FAULT:")
+CH1SET_lbl = ttk.Label(regframe, text="CH1SET:")
+CH2SET_lbl = ttk.Label(regframe, text="CH2SET:")
+CH3SET_lbl = ttk.Label(regframe, text="CH3SET:")
+CH4SET_lbl = ttk.Label(regframe, text="CH4SET:")
+CH5SET_lbl = ttk.Label(regframe, text="CH5SET:")
+CH6SET_lbl = ttk.Label(regframe, text="CH6SET:")
+CH7SET_lbl = ttk.Label(regframe, text="CH7SET:")
+CH8SET_lbl = ttk.Label(regframe, text="CH8SET:")
+FAULT_STATP_lbl = ttk.Label(regframe, text="FAULT_STATP:")
+FAULT_STATN_lbl = ttk.Label(regframe, text="FAULT_STATN:")
+GPIO_lbl = ttk.Label(regframe, text="GPIO:")
+
+ID_lblv = ttk.Label(regframe, text="ID:")
+CONFIG1_lblv = ttk.Label(regframe, text="")
+CONFIG2_lblv = ttk.Label(regframe, text="")
+CONFIG3_lblv = ttk.Label(regframe, text="")
+FAULT_lblv = ttk.Label(regframe, text="")
+CH1SET_lblv = ttk.Label(regframe, text="")
+CH2SET_lblv = ttk.Label(regframe, text="")
+CH3SET_lblv = ttk.Label(regframe, text="")
+CH4SET_lblv = ttk.Label(regframe, text="")
+CH5SET_lblv = ttk.Label(regframe, text="")
+CH6SET_lblv = ttk.Label(regframe, text="")
+CH7SET_lblv = ttk.Label(regframe, text="")
+CH8SET_lblv = ttk.Label(regframe, text="")
+FAULT_STATP_lblv = ttk.Label(regframe, text="")
+FAULT_STATN_lblv = ttk.Label(regframe, text="")
+GPIO_lblv = ttk.Label(regframe, text="")
+
+
+#ADC Initialization (THESE ARE BLOCKING, NOT THREADED)
+
+#Initial ADC Reset
+ADCInit()
+
 #Grid Widgets
 
 DATAval_lbl.grid(column=2, row=0, pady=10)
@@ -286,6 +373,44 @@ ACCdata_box.grid(column=0, row=6, pady=10)
 ACCrreg_button.grid(column=1, row=5, pady=10)
 ACCwreg_button.grid(column=1, row=6, pady=10)
 REGvalAcc_lbl.grid(column=2, row=5, pady=10)
+
+ADCReadAllReg_button.grid(column=0, row=7, pady=10)
+
+ID_lbl.grid(column=0, row=1, pady=2)
+CONFIG1_lbl.grid(column=0, row=2, pady=2)
+CONFIG2_lbl.grid(column=0, row=3, pady=2)
+CONFIG3_lbl.grid(column=0, row=4, pady=2)
+FAULT_lbl.grid(column=2, row=1, pady=2)
+CH1SET_lbl.grid(column=2, row=2, pady=2)
+CH2SET_lbl.grid(column=2, row=3, pady=2)
+CH3SET_lbl.grid(column=2, row=4, pady=2)
+CH4SET_lbl.grid(column=4, row=1, pady=2)
+CH5SET_lbl.grid(column=4, row=2, pady=2)
+CH6SET_lbl.grid(column=4, row=3, pady=2)
+CH7SET_lbl.grid(column=4, row=4, pady=2)
+CH8SET_lbl.grid(column=6, row=1, pady=2)
+FAULT_STATP_lbl.grid(column=6, row=2, pady=2)
+FAULT_STATN_lbl.grid(column=6, row=3, pady=2)
+GPIO_lbl.grid(column=6, row=4, pady=2)
+
+ADCpadx = 10
+
+ID_lblv.grid(column=1, row=1, padx=ADCpadx, pady=2)
+CONFIG1_lblv.grid(column=1, row=2, padx=ADCpadx, pady=2)
+CONFIG2_lblv.grid(column=1, row=3, padx=ADCpadx, pady=2)
+CONFIG3_lblv.grid(column=1, row=4, padx=ADCpadx, pady=2)
+FAULT_lblv.grid(column=3, row=1, padx=ADCpadx, pady=2)
+CH1SET_lblv.grid(column=3, row=2, padx=ADCpadx, pady=2)
+CH2SET_lblv.grid(column=3, row=3, padx=ADCpadx, pady=2)
+CH3SET_lblv.grid(column=3, row=4, padx=ADCpadx, pady=2)
+CH4SET_lblv.grid(column=5, row=1, padx=ADCpadx, pady=2)
+CH5SET_lblv.grid(column=5, row=2, padx=ADCpadx, pady=2)
+CH6SET_lblv.grid(column=5, row=3, padx=ADCpadx, pady=2)
+CH7SET_lblv.grid(column=5, row=4, padx=ADCpadx, pady=2)
+CH8SET_lblv.grid(column=7, row=1, padx=ADCpadx, pady=2)
+FAULT_STATP_lblv.grid(column=7, row=2, padx=ADCpadx, pady=2)
+FAULT_STATN_lblv.grid(column=7, row=3, padx=ADCpadx, pady=2)
+GPIO_lblv.grid(column=7, row=4, padx=ADCpadx, pady=2)
 
 #Start main loop of GUI
 adcgui.mainloop()
