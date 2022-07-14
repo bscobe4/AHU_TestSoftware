@@ -312,7 +312,7 @@ ACCwreg_button = ttk.Button(adcframe, text="Write ACC Register", command=ACCThre
 
 REGvalAcc_lbl = ttk.Label(adcframe, text="ACC Register Value: no data")
 
-ADCReadAllReg_button = ttk.Button(adcframe, text="Read All ADC Registers", command=ADCReadAllReg())
+
 
 ID_lbl = ttk.Label(regframe, text="ID:")
 CONFIG1_lbl = ttk.Label(regframe, text="CONFIG1:")
@@ -348,7 +348,7 @@ FAULT_STATP_lblv = ttk.Label(regframe, text="")
 FAULT_STATN_lblv = ttk.Label(regframe, text="")
 GPIO_lblv = ttk.Label(regframe, text="")
 
-
+ADCReadAllReg_button = ttk.Button(adcframe, text="Read All ADC Registers", command=ADCReadAllReg())
 #ADC Initialization (THESE ARE BLOCKING, NOT THREADED)
 
 #Initial ADC Reset
