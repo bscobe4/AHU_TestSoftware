@@ -251,7 +251,7 @@ def ACCThreadWREG():
 #Setup SPI Bus
 spi = spidev.SpiDev()
 #spi.max_speed_hz = 500000
-#spi.mode = 0
+spi.mode = 0x01
 
 #Construct and initialize GUI
 
