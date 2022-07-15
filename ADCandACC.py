@@ -118,6 +118,7 @@ REGADDR_ACC = {'MAN_ID': 0x00,'PART_ID': 0x01,'XADP_L': 0x02,'XADP_H': 0x03,'YAD
 def sendADCcmd():
     try:
         spi.open(0,spiaddr_ADS131E08)
+        spi.mode = 0x01
         spi.writebytes([CMD_ADC[CMDvar.get()]])
         if CMDvar.get() == 'RDATA':
             data = spi.readbytes(1)
@@ -132,6 +133,7 @@ def ADCReadAllReg():
     try:
         REGvar.set('ID')
         spi.open(0,spiaddr_ADS131E08)
+        spi.mode = 0x01
         spi.writebytes([CMD_ADC['RREG'] + REGADDR_ADC[REGvar.get()], 0x0F]) #Read ll 16 registers starting with "ID"
         regs = spi.readbytes(16)
         #print(regs)
@@ -176,6 +178,7 @@ def readregs_ADS131E08(): #Check if byte pairs need to be split in half
     #print(hex(CMD_ADC['RREG'] + REGADDR_ADC[REGvar.get()]))
     try:
         spi.open(0,spiaddr_ADS131E08)
+        spi.mode = 0x01
         spi.writebytes([CMD_ADC['RREG'] + REGADDR_ADC[REGvar.get()], 0x00])
         regs = spi.readbytes(1)
         #print(regs)
@@ -190,6 +193,7 @@ def readregs_ADS131E08(): #Check if byte pairs need to be split in half
 def writeregs_ADS131E08(): #NO NO can't do this, RREG and WREG need to be composed first, then the value of the command integrates the register valu
     try:    
         spi.open(0,spiaddr_ADS131E08)
+        spi.mode = 0x01
         spi.writebytes([CMD_ADC['WREG'] + REGADDR_ADC[REGvar.get()], 0x00, int(DATAvar.get(), 16)])
         print(hex(CMD_ADC['WREG'] + REGADDR_ADC[REGvar.get()]))
         REGval_lbl['text'] = "ADC Register Value: " + hex(int(DATAvar.get(), 16))
@@ -251,7 +255,7 @@ def ACCThreadWREG():
 #Setup SPI Bus
 spi = spidev.SpiDev()
 #spi.max_speed_hz = 500000
-spi.mode = 0x01
+#spi.mode = 0x01
 
 #Construct and initialize GUI
 
