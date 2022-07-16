@@ -114,7 +114,7 @@ regs3 =spi.xfer([0x20 , 0x0F]) #Read ll 16 registers starting with "ID"
 print(regs3)
 spi.close()
 
-print("\nTest 5:\n")
+print("\nTest 7:\n")
 spi.open(0,spiaddr_ADS131E08)
 spi.mode = 0b01
 spi.max_speed_hz = 1000000
