@@ -6,6 +6,9 @@ numbytes = 1
 data = []
 mode = 1
 lsbfirst = False
+
+spi = spidev.SpiDev()
+
 while(not ESC):
 
     inp = input('\nHit any key and "enter" to input bytes you want to write to the SPI bus or type "op" for more options\n')
