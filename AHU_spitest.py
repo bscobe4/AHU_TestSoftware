@@ -46,7 +46,7 @@ GPIO.cleanup()
 print("\nTest 1:\n")
 spi.open(0,spiaddr_ADS131E08)
 spi.mode = 0b01
-spi.max_speed_hz = 1000000
+spi.max_speed_hz = 1000000                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           
 spi.writebytes([0x12])
 data = spi.readbytes(1)
 print(data)

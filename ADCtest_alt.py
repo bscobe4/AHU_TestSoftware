@@ -39,6 +39,12 @@ REGADDR_ADC = {'ID':0x00,
                      'FAULT_STATN':0x13,
                      'GPIO':0x14}
 
+
+GPIO.setmode(GPIO.BOARD)
+GPIO.setwarnings(True)
+GPIO.setup(16, GPIO.IN) #DRDY
+GPIO.setup(18, GPIO.OUT, initial=GPIO.LOW) #START
+
 #**FUNCTION DEFINITIONS**
 def zeros(num):
     zerolist = []
@@ -63,7 +69,7 @@ def sendADCcmd(CMDvar):
         spi.writebytes([CMD_ADC[CMDvar]])
         
     spi.close()
-    print(CMDvar + " command sent\n")
+    print(CMDvar + " command sent (" + str(hex(CMD_ADC[CMDvar])) + ")\n")
         
     #except:
     #    print("Could not send ADC command " + CMDvar)

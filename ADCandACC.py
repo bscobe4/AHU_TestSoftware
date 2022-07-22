@@ -227,25 +227,31 @@ def writeregs_KX132():
 
 def ADCThreadCMD():
     #Call runSTEP function
-    t3=Thread(target=sendADCcmd)
-    t3.start()
+    #t3=Thread(target=sendADCcmd)
+    #t3.start()
+    sendADCcmd()
     
 def ADCThreadRREG():
     #Call runSTEP function
-    t4=Thread(target=readregs_ADS131E08)
-    t4.start()
+    #t4=Thread(target=readregs_ADS131E08)
+    #t4.start()
+    readregs_ADS131E08()
+    
 def ADCThreadWREG():
     #Call runSTEP function
-    t5=Thread(target=writeregs_ADS131E08)
-    t5.start()
+    #t5=Thread(target=writeregs_ADS131E08)
+    #t5.start()
+    writeregs_ADS131E08()
     
 def ACCThreadRREG():
-    t6=Thread(target=readregs_KX132)
-    t6.start()
+    #t6=Thread(target=readregs_KX132)
+    #t6.start()
+    readregs_KX132()
     
 def ACCThreadWREG():
-    t7=Thread(target=writeregs_KX132)
-    t7.start()
+    #t7=Thread(target=writeregs_KX132)
+    #t7.start()
+    writeregs_KX132()
     
  
     
@@ -255,7 +261,7 @@ def ACCThreadWREG():
 #Setup SPI Bus
 spi = spidev.SpiDev()
 #spi.max_speed_hz = 500000
-#spi.mode = 0x01
+#spi.mode = 1
 
 #Construct and initialize GUI
 

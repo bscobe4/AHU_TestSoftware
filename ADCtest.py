@@ -39,6 +39,10 @@ REGADDR_ADC = {'ID':0x00,
                      'FAULT_STATN':0x13,
                      'GPIO':0x14}
 
+GPIO.setmode(GPIO.BOARD)
+GPIO.setwarnings(True)
+GPIO.setup(SPI_list, GPIO.OUT, initial=GPIO.HIGH)
+
 #**FUNCTION DEFINITIONS**
 def sendADCcmd(CMDvar):
     #try:

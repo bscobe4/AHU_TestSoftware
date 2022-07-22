@@ -38,9 +38,9 @@ PIN_MOSI = 19
 PIN_MISO = 21
 PIN_SCLK = 23
 PIN_CS0  = 24
-PIN_CS1  = 6
+PIN_CS1  = 26
 
-GPIO.cleanup()
+#GPIO.cleanup()
 
 SPI_list = [PIN_MOSI,PIN_MISO,PIN_SCLK,PIN_CS0,PIN_CS1]
 
@@ -52,7 +52,7 @@ input('Initial SPI pin values should be HIGH. Type something and hit "enter" to 
 
 GPIO.output(SPI_list, GPIO.LOW)
 
-input('SPI pin values should be low. Press "enter" to end)
+input('SPI pin values should be low. Press "enter" to end')
 
 spi = spidev.SpiDev()
 
